@@ -35,6 +35,17 @@
     const PLAYERS_PER_LINE = 6;
     const container = document.getElementById('lines');
 
+    function getLineName(index) {
+      const data = loadData();
+      return data[`line${index}Name`] || `Line ${index}`;
+    }
+
+    function saveLineName(index, name) {
+      const data = loadData();
+      data[`line${index}Name`] = name;
+      saveData(data);
+    }
+
     function loadData() {
       return JSON.parse(localStorage.getItem('teamData')) || {};
     }
@@ -49,7 +60,11 @@
 
       const line = document.createElement('div');
       line.className = 'line';
-      line.innerHTML = `<h2>Line ${lineIndex}</h2>`;
+      const lineName = getLineName(lineIndex);
+      line.innerHTML = `
+        <h2 contenteditable="true" style="outline:none;cursor:text;">${lineName}</h2>
+        <p style="text-align:center;font-size:12px;opacity:.7;">Clique no nome da Line para editar</p>
+      `;
 
       for (let i = 0; i < PLAYERS_PER_LINE; i++) {
         const p = lineData[i] || { nick:'', funcao:'' };
@@ -61,6 +76,11 @@
         `;
         line.appendChild(div);
       }
+
+            const titleEl = line.querySelector('h2');
+      titleEl.addEventListener('blur', () => {
+        saveLineName(lineIndex, titleEl.innerText.trim() || `Line ${lineIndex}`);
+      });
 
       const controls = document.createElement('div');
       controls.className = 'controls';
