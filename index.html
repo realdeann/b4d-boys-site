@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Organizador de Time eSports</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#0f1220; color:#fff; margin:0; padding:20px; }
+    h1 { text-align:center; }
+    .lines { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:16px; }
+    .line { background:#1a1f3a; border-radius:12px; padding:16px; box-shadow:0 10px 20px rgba(0,0,0,.3); }
+    .line h2 { margin-top:0; text-align:center; }
+    .player { display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px; }
+    .player input { padding:8px; border-radius:6px; border:none; }
+    .controls { display:flex; gap:8px; margin-top:12px; }
+    button { flex:1; padding:10px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; }
+    .save { background:#6c5ce7; color:#fff; }
+    .clear { background:#d63031; color:#fff; }
+    footer { margin-top:20px; text-align:center; opacity:.7; }
+  </style>
+</head>
+<body>
+  <div style="text-align:center;margin-bottom:20px;">
+    <img src="logo.png" alt="Logo B4D BOYS" style="max-width:180px;display:block;margin:0 auto 10px;">
+    <h1 style="margin:0;letter-spacing:2px;">B4D BOYS</h1>
+    <p style="opacity:.8;margin-top:6px;">Organizador de Time eSports</p>
+  </div>
+
+  <div class="lines" id="lines"></div>
+
+  <footer>Dados salvos automaticamente no navegador</footer>
+
+  <script>
+    const LINES = 4;
+    const PLAYERS_PER_LINE = 6;
+    const container = document.getElementById('lines');
+
+    function loadData() {
+      return JSON.parse(localStorage.getItem('teamData')) || {};
+    }
+
+    function saveData(data) {
+      localStorage.setItem('teamData', JSON.stringify(data));
+    }
+
+    function createLine(lineIndex) {
+      const data = loadData();
+      const lineData = data[`line${lineIndex}`] || [];
+
+      const line = document.createElement('div');
+      line.className = 'line';
+      line.innerHTML = `<h2>Line ${lineIndex}</h2>`;
+
+      for (let i = 0; i < PLAYERS_PER_LINE; i++) {
+        const p = lineData[i] || { nick:'', funcao:'' };
+        const div = document.createElement('div');
+        div.className = 'player';
+        div.innerHTML = `
+          <input placeholder="Nick do Player" value="${p.nick}" />
+          <input placeholder="Função" value="${p.funcao}" />
+        `;
+        line.appendChild(div);
+      }
+
+      const controls = document.createElement('div');
+      controls.className = 'controls';
+
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'save';
+      saveBtn.textContent = 'Salvar Line';
+      saveBtn.onclick = () => {
+        const players = [...line.querySelectorAll('.player')].map(p => ({
+          nick: p.children[0].value,
+          funcao: p.children[1].value
+        }));
+        data[`line${lineIndex}`] = players;
+        saveData(data);
+        alert(`Line ${lineIndex} salva!`);
+      };
+
+      const clearBtn = document.createElement('button');
+      clearBtn.className = 'clear';
+      clearBtn.textContent = 'Limpar';
+      clearBtn.onclick = () => {
+        if (confirm('Deseja limpar esta line?')) {
+          data[`line${lineIndex}`] = [];
+          saveData(data);
+          location.reload();
+        }
+      };
+
+      controls.appendChild(saveBtn);
+      controls.appendChild(clearBtn);
+      line.appendChild(controls);
+
+      return line;
+    }
+
+    for (let l = 1; l <= LINES; l++) {
+      container.appendChild(createLine(l));
+    }
+  </script>
+</body>
+</html>
